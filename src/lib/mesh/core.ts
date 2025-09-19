@@ -40,8 +40,8 @@ export class Mesh2 {
         const aTexCoords = gl.getAttribLocation(program, "aTexCoords");
         createVBO(aTexCoords, uv, 2);
 
-        // const aTangent = gl.getAttribLocation(program, "aTangent");
-        // createVBO(aTangent, tangent, 4);
+        const aTangent = gl.getAttribLocation(program, "aTangent");
+        createVBO(aTangent, tangent, 4);
 
 
         if (index) {

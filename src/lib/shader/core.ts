@@ -47,9 +47,6 @@ export class Shader {
         const fSh = compileShader(gl.FRAGMENT_SHADER, fShSrc);
 
         this.ID = createAndLinkProgram(gl, [vSh, fSh]);
-        gl.useProgram(this.ID);
-        const uLightPos = gl.getUniformLocation(this.ID, "uLightPos");
-        gl.uniform3fv(uLightPos, this.lightPos);
         gl.deleteShader(vSh);
         gl.deleteShader(fSh);
 
@@ -76,9 +73,6 @@ export class Shader {
             3,
         );
 
-        // const aNormal = gl.getAttribLocation(this.ID, "aNormal");
-        // createVBO(aNormal, new Float32Array([]), 3);
-
         createEBO(
             new Uint16Array([
                 0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13,
@@ -91,15 +85,28 @@ export class Shader {
 
     use() {
         gl.useProgram(this.ID);
+        const uLightPos = gl.getUniformLocation(this.ID, "uLightPos");
+        gl.uniform3fv(uLightPos, this.lightPos);
     }
 
     renderLight() {
         gl.bindVertexArray(this.vao);
 
         const modelLoc = gl.getUniformLocation(this.ID, "uModel");
+
+        const offset = vec3.create();
+        vec3.sub(offset, this.lightPos, [0, 0, 0]);
+
+        const rot = mat4.create();
+        mat4.rotate(rot, rot, 0.01, [0, 1, 0]);
+
+        vec3.transformMat4(offset, offset, rot);
+        vec3.add(this.lightPos, [0, 0, 0], offset);
+
         const model = mat4.create();
         mat4.translate(model, model, this.lightPos);
         mat4.scale(model, model, [0.4, 0.4, 0.4]);
+
         gl.uniformMatrix4fv(modelLoc, false, model);
 
         gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);

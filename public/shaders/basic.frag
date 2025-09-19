@@ -4,6 +4,7 @@ precision mediump float;
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoords;
+in mat3 TBN;
 
 out vec4 FragColor;
 
@@ -17,6 +18,7 @@ uniform sampler2D uNormalMap;
 
 void main() {
     vec3 normal = normalize(texture(uNormalMap, TexCoords).rgb * 2.0 - 1.0);
+    normal = normalize(TBN * normal);
 
     // vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(uLightPos - FragPos);
