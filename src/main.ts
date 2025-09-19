@@ -5,7 +5,7 @@ import { Canvas } from "./lib/canvas/core";
 import { Mesh2 } from "./lib/mesh/core";
 import { Shader } from "./lib/shader/core";
 import "./style.css";
-import { filthyShipTex } from "./texture/box/filthy-ship";
+import { Texture } from "./lib/texture";
 
 declare global {
     interface Window {
@@ -16,23 +16,29 @@ declare global {
 }
 
 let x: Entity;
-let program: Shader;
 let objs: Entity[] = [];
 let camera = new Camera();
 new Canvas("canvas");
 
 async function main() {
-    program = await Shader.fromUrl(
-        "/shaders/basic.vert",
-        "/shaders/basic.frag",
-    );
+    Shader.init(gl);
+    Texture.init(gl);
+
+    await Promise.all([
+        Texture.fromImgUrl("space-panels", {
+            albedo: "/textures/space-panels/albedo.png",
+            normal: "/textures/space-panels/normal-ogl.png",
+        }),
+        Shader.fromUrl("basic", {
+            vshUrl: "/shaders/basic.vert",
+            fshUrl: "/shaders/basic.frag",
+        }),
+    ]);
 
     x = new Entity();
-    x.program = program.id;
-
-    x.mesh = await Mesh2.fromGlb("/box01.glb", x.program);
-    await filthyShipTex.load(gl.RGB, gl.RGB, gl.UNSIGNED_BYTE);
-    x.mesh.texture = filthyShipTex.ID;
+    x.program = Shader.get("basic").ID;
+    x.texture = Texture.get("space-panels");
+    x.mesh = await Mesh2.fromGlb("/box02.glb", x.program);
 
     mat4.translate(x.model, x.model, [0, -2, 5]);
 
@@ -52,11 +58,14 @@ function draw(now: number) {
 
     camera.update({ dt });
 
+    const program = Shader.get("basic");
     program.use();
-    const viewLoc = gl.getUniformLocation(program.id, "uView");
+    program.renderLight();
+
+    const viewLoc = gl.getUniformLocation(program.ID, "uView");
     gl.uniformMatrix4fv(viewLoc, false, camera.view);
 
-    const projectionLoc = gl.getUniformLocation(program.id, "uProjection");
+    const projectionLoc = gl.getUniformLocation(program.ID, "uProjection");
     gl.uniformMatrix4fv(projectionLoc, false, camera.projection);
 
     for (const obj of objs) {

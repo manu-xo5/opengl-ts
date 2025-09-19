@@ -12,12 +12,10 @@ export class Mesh2 {
             uv,
             tangent,
         } = await loadGlbFile(url);
-        void tangent;
-        return new Mesh2(vertex, normal, index, uv, program);
+        return new Mesh2(vertex, normal, index, uv, tangent, program);
     }
 
-    id: WebGLVertexArrayObject;
-    texture: WebGLTexture | null = null;
+    ID: WebGLVertexArrayObject;
 
     drawType: "elements" | "arrays";
     indexCount: number;
@@ -27,10 +25,11 @@ export class Mesh2 {
         normal: TypedArray,
         index: TypedArray | null,
         uv: TypedArray,
+        tangent: TypedArray,
         program: WebGLProgram,
     ) {
-        this.id = gl.createVertexArray();
-        gl.bindVertexArray(this.id);
+        this.ID = gl.createVertexArray();
+        gl.bindVertexArray(this.ID);
 
         const aPosition = gl.getAttribLocation(program, "aPosition");
         createVBO(aPosition, vertex, 3);
@@ -40,6 +39,10 @@ export class Mesh2 {
 
         const aTexCoords = gl.getAttribLocation(program, "aTexCoords");
         createVBO(aTexCoords, uv, 2);
+
+        // const aTangent = gl.getAttribLocation(program, "aTangent");
+        // createVBO(aTangent, tangent, 4);
+
 
         if (index) {
             this.drawType = "elements";
@@ -54,18 +57,14 @@ export class Mesh2 {
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 
-    draw(model: mat4, program: WebGLProgram) {
-        gl.bindVertexArray(this.id);
+    bind(model: mat4, program: WebGLProgram) {
+        gl.bindVertexArray(this.ID);
 
         const modelLoc = gl.getUniformLocation(program, "uModel");
         gl.uniformMatrix4fv(modelLoc, false, model);
+    }
 
-        if (this.texture) {
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.uniform1i(gl.getUniformLocation(program, "uSampler"), 0);
-        }
-
+    draw() {
         if (this.drawType === "elements") {
             gl.drawElements(
                 gl.TRIANGLES,

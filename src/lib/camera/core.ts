@@ -41,7 +41,7 @@ export class Camera {
             );
             vec3.normalize(forward, forward);
 
-            const step = 5.0;
+            const step = 0.3;
             if (e.deltaY < 0) {
                 vec3.scaleAndAdd(this.position, this.position, forward, step);
             } else {

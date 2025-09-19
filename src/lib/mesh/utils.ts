@@ -27,6 +27,6 @@ export async function loadGlbFile(url: string) {
         normal: normal.array,
         uv: uv.array,
         index: index ? index.array : null,
-        tangent: tangent ? tangent.array : null,
+        tangent: tangent?.array ?? new Float32Array(),
     };
 }

@@ -21,3 +21,10 @@ export async function loadFile(src: string) {
 export function generateId() {
     return Math.random().toString(36).substring(2, 15);
 }
+
+export function urlToFilename(url: string) {
+    const parts = url.split("/");
+    const filename = parts[parts.length - 1];
+    const extIndex = filename.lastIndexOf(".");
+    return filename.substring(0, extIndex);
+}
